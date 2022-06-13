@@ -1,5 +1,5 @@
 ## Venc Design and Velocity Estimation for Phase Contrast MRI
-* Shen Zhao, The Ohio State University (zhao.1758@osu.edu)
+* Shen Zhao, The Ohio State University (zhao.1758@osu.edu, shenzhao@stanford.edu)
 * Rizwan Ahmad, The Ohio State University (ahmad.46@osu.edu)
 * Lee C. Potter, The Ohio State University (potter.36@osu.edu)
 

@@ -1,66 +1,32 @@
-function [output] = PRoM3( r1,r2,r3,m1,m2,m3,cov_inv)
-% m1 m2 m3 are integers
-%% Initialize several vairables
-persistent  h Omega k1List k2List k3List
+function [K,v_k,L] = PRoM3( v123,venc,cov_inv)
+% v123 are measured noisy (possibly wrapped) velocity
+% venc is venc
+% cov_inv is the inverse of covariance matrix
+% K is the wrapping integers candidates
+% v_k is the velocity candidates
+% L is the cost
 
-R = m2/m1;
-if isempty(Omega)||isempty(h)|| isempty(k1List) || isempty(k2List) || isempty(k3List)
-    
-    Omega = lcm(lcm(m1,m2),m3);
-    h = Omega./[m1, m2, m3];
-    
-    % number of gcd intervals searching range
-    i=1;
-    for k1 = -1:h(1)
-        for k2 = -1:h(2)
-            for k3 = -1:h(3)
-                if max([(k1-1)*m1,(k2-1)*m2,(k3-1)*m3]) < min([(k1+1)*m1,(k2+1)*m2,(k3+1)*m3])
-                    k1List(i)=k1;
-                    k2List(i)=k2;
-                    k3List(i)=k3;
-                    i=i+1;
-                end
-            end
-        end
-    end
-    
-    clear k1 k2 k3;
-    indx1 = [];
-    for i = 1: numel(k1List)
-        indx1 = [indx1, find((k1List == k1List(i)+h(1)).*(k2List == k2List(i)+h(2)).*(k3List == k3List(i)+h(3)))];        
-    end
-    k1List(indx1) = [];
-    k2List(indx1) = [];
-    k3List(indx1) = [];
+persistent Omega h 
+if isempty(Omega) || isempty(h) 
+    Omega = 2*double(lcm(lcm(sym(venc(1:2))),sym(venc(3))));
+    h = round(Omega./venc/2);    
 end
+
+% Building K
+v = [v123(1)+venc(1):2*venc(1):Omega,v123(2)+venc(2):2*venc(2):Omega,v123(3)+venc(3):2*venc(3):Omega];
+K = ceil((v-v123-1e-4)/2./venc-0.5);                                        % -1e-4 is to counter rounding error in ceil function for jumping points
+
 %% Search
-v_Hat_Candidate = zeros(1,numel(k1List));
-cost = v_Hat_Candidate;
+w = cov_inv*ones(3,1)/(ones(1,3)*cov_inv*ones(3,1));
+v_k = mod(w'*(2*K.*venc+v123),Omega);
 
-weights = 1/(2*(R^2-R+1))*[R^2 1 (-1+R)^2]';
+x = v_k - v123 - round((v_k - v123)./2./venc)*2.*venc;
+L = sum(x.*(cov_inv*x));                                                    % vectorize to avoid for loop 
 
-
-v_Hat_Candidate = mod(weights'*([k1List;k2List;k3List].*[m1;m2;m3]+[r1;r2;r3]),Omega);
-
-for i = 1: numel(v_Hat_Candidate)
-    %     x = [Circular_Distance(r1,v_Hat_Candidate(i),m1);...
-    %         Circular_Distance(r2,v_Hat_Candidate(i),m2);
-    %         Circular_Distance(r3,v_Hat_Candidate(i),m3)];
-    
-    x = [v_Hat_Candidate(i)-r1 - round((v_Hat_Candidate(i)-r1)/m1)*m1;...
-        v_Hat_Candidate(i)-r2 - round((v_Hat_Candidate(i)-r2)/m2)*m2;...
-        v_Hat_Candidate(i)-r3 - round((v_Hat_Candidate(i)-r3)/m3)*m3];
-    
-    cost(i) = round(x'*cov_inv*x,8);
-    %     To avoid the misleading due to Matlab precision onto the cost
-end
-[~,indx2] = min(cost(:));
-k1Hat = k1List(indx2);
-k2Hat = k2List(indx2);
-k3Hat = k3List(indx2);
-nHat = v_Hat_Candidate(indx2);
-nHat = (nHat < Omega/2).*nHat+(nHat > Omega/2).*(nHat-Omega);
-output = struct('k1Hat',k1Hat,'k2Hat',k2Hat,'k3Hat',k3Hat,'nHat',nHat,'mincost',cost(indx2),'cost',cost);
+[L,indx] = sort(L);
+v_k = (v_k < Omega/2).*v_k+(v_k > Omega/2).*(v_k-Omega);
+K = K(:,indx);
+v_k = v_k(indx);
 
 
 end

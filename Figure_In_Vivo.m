@@ -5,7 +5,7 @@ clc;
 %% Load data and pre-processing
 p = 5;
 q = 3;
-venc_integer = [q*(p-q);    p*(p-q);     p*q];                              % enforce integer to avoid possible by applying lcm to noninteger values
+venc_integer = [q*(p-q);    p*(p-q);     p*q];                              % enforce integer to avoid possible error by applying lcm to noninteger values
 scaling = 21/venc_integer(1);
 venc = scaling*venc_integer;
 

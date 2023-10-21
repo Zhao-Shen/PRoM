@@ -10,6 +10,9 @@ In phase-contrast magnetic resonance imaging (PC-MRI), spin velocity contributes
 ## Implementation
 * To implement and generate the figure of in vivo processing results, run Figure_In_Vivo.m
 
+## Extension to General Linear Mixed Integer Least Squares
+https://github.com/tuckerda/Mixed-Integer-Linear-Models-MLE
+
 ## References
 1. Zhao, Shen, Rizwan Ahmad, and Lee C. Potter. "Venc Design and Velocity Estimation for Phase Contrast MRI." arXiv preprint arXiv:2109.12481 (2021). https://arxiv.org/abs/2109.12481
 2. Zhao, Shen, Rizwan Ahmad, and Lee C. Potter. "Maximizing Unambiguous Velocity Range in Phase-Contrast MRI with Multipoint Encoding." 2022 IEEE 19th International Symposium on Biomedical Imaging (ISBI). IEEE, 2022. https://ieeexplore.ieee.org/document/9761589
